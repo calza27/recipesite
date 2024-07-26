@@ -1,7 +1,34 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import styles from '../styles/Home.module.css';
+import { useState, useEffect } from 'react'
+
+const api = "https://6maydcc8u3.execute-api.ap-southeast-2.amazonaws.com"
+
+function getFileUrl(e, filename) {
+  e.preventDefault()
+  fetch(`${api}/api/recipe/getFileUrl/${filename}`)
+    .then((res) => res.text())
+    .then((url) => {
+      window.open(url, '_blank');
+    })
+}
 
 export default function Home() {
+  const [data, setData] = useState(null)
+  const [isLoading, setLoading] = useState(true)
+  useEffect(() => {
+    fetch(`${api}/api/recipe/list`)
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data)
+        setLoading(false)
+      })
+  }, [])
+
+  if (isLoading) return <p>Loading...</p>
+  if (!data) return <p>No profile data</p>
+
   return (
     <div className={styles.container}>
       <Head>
@@ -17,6 +44,17 @@ export default function Home() {
         <p className={styles.description}>
           File Versions
         </p>
+        <div>
+          <ul>
+            {data.map((item, index) => (
+              <li key={index}>
+                <Link href='' onClick={(e) => getFileUrl(e, item.Version)}>
+                  <a>{item.Date}</a>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </main>
 
       <footer>
